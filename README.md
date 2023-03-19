@@ -1,6 +1,6 @@
 # GitHub Actions for creating workspaces in Terraform Cloud
 
-With this action you can create workspaces in Terraform Cloud as part of your GitHub actions workflows.
+With this action you can create workspaces in Terraform Cloud as part of your GitHub Actions workflows.
 
 - This action should be preceded by the [mattias-fjellstrom/tfc-setup](https://github.com/mattias-fjellstrom/tfc-setup/blob/main/action.yaml) action to configure required environment variables. See the sample below.
 - The action only supports authenticating to Terraform Cloud using an API token, read the [Terraform Cloud documentation](https://developer.hashicorp.com/terraform/cloud-docs/users-teams-organizations/api-tokens) about tokens.
@@ -53,5 +53,5 @@ jobs:
           organization: ${{ env.ORGANIZATION }}
           project: ${{ env.PROJECT }}
           workspace: ${{ env.WORKSPACE }}
-      - uses: mattias-fjellstrom/tfc-destroy-workspace@v1
+      - uses: mattias-fjellstrom/tfc-delete-workspace@v1
 ```
