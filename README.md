@@ -2,7 +2,7 @@
 
 With this action you can create workspaces in Terraform Cloud as part of your GitHub actions workflows.
 
-- This action should be preceded by the [mattias-fjellstrom/tfe-setup] action to configure required environment variables. See the sample below.
+- This action should be preceded by the [mattias-fjellstrom/tfc-setup](https://github.com/mattias-fjellstrom/tfc-setup/blob/main/action.yaml) action to configure required environment variables. See the sample below.
 - The action only supports authenticating to Terraform Cloud using an API token, read the [Terraform Cloud documentation](https://developer.hashicorp.com/terraform/cloud-docs/users-teams-organizations/api-tokens) about tokens.
 - Currently an GitHub App installation in your repository is required for this action, read the [Terraform Cloud documentation](https://developer.hashicorp.com/terraform/cloud-docs/vcs/github-app) on how to create one. The GitHub App must be installed in the same GitHub organization where you use this action.
 - You can specify which repository directory your workspace is connected to in the `directory` property. The default value is the root of the repository.
@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: mattias-fjellstrom/tfe-setup@v1
+      - uses: mattias-fjellstrom/tfc-setup@v1
         with:
           token: ${{ secrets.TERRAFORM_CLOUD_TOKEN }}
           organization: ${{ env.ORGANIZATION }}
