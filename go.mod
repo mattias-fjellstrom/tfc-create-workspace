@@ -1,4 +1,4 @@
-module github.com/mattias-fjellstrom/tfe-create-workspace
+module github.com/mattias-fjellstrom/tfc-create-workspace
 
 go 1.20
 
