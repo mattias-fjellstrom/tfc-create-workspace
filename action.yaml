@@ -1,0 +1,39 @@
+name: Create Terraform Cloud workspace
+author: Mattias Fjellström (mattias.fjellstrom [at] gmail.com)
+description: Create a new workspace in Terraform Cloud
+
+inputs:
+  organization:
+    description: Terraform cloud organization name
+  project:
+    description: Terraform cloud project name (defaults to the default project)
+  workspace:
+    description: Desired Terraform cloud workspace name
+  repository:
+    description: GitHub repository name (defaults to current repository)
+    default: ${{ github.repository }}
+  branch:
+    description: Git branch to trigger runs from (defaults to repository default branch)
+  directory:
+    description: Repository directory containing Terraform configuration (defaults to root directory)
+
+runs:
+  using: docker
+  image: Dockerfile
+  args:
+    - -organization
+    - ${{ inputs.organization }}
+    - -project
+    - ${{ inputs.project }}
+    - -workspace
+    - ${{ inputs.workspace }}
+    - -repository
+    - ${{ inputs.repository }}
+    - -working_directory
+    - ${{ inputs.directory }}
+    - -branch
+    - ${{ inputs.branch }}
+
+branding:
+  icon: star
+  color: blue
