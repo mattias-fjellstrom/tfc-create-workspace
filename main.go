@@ -24,6 +24,7 @@ var workspaceName string
 var repositoryName string
 var workingDirectory string
 var branchName string
+var variables string
 
 func init() {
 	flag.StringVar(&organizationName, "organization", "", "Terraform Cloud organization name")
@@ -32,6 +33,7 @@ func init() {
 	flag.StringVar(&repositoryName, "repository", "", "Git repository to connect the Terraform Cloud workspace to")
 	flag.StringVar(&workingDirectory, "working_directory", "", "Directory in repository containing the Terraform configuration")
 	flag.StringVar(&branchName, "branch", "", "Branch name Terraform runs should trigger on")
+	flag.StringVar(&variables, "variables", "", "Comma separated list of key=value variable assignments")
 }
 
 func main() {
@@ -44,7 +46,7 @@ func main() {
 			log.Fatalf("The organization name must be provided either as an input parameter or in the %s environment variable", ENV_TERRAFORM_CLOUD_ORGANIZATION)
 		}
 		organizationName = os.Getenv(ENV_TERRAFORM_CLOUD_ORGANIZATION)
-		log.Println("Organization name read from environment variable")
+		log.Printf("Organization name read from environment variable: %s", organizationName)
 	}
 
 	if workspaceName == "" {
@@ -54,7 +56,7 @@ func main() {
 			log.Fatalf("A workspace name must be provided either as an input parameter or in the %s environment variable", ENV_TERRAFORM_CLOUD_WORKSPACE)
 		}
 		workspaceName = os.Getenv(ENV_TERRAFORM_CLOUD_WORKSPACE)
-		log.Println("Workspace name read from environment variable")
+		log.Printf("Workspace name read from environment variable: %s", workspaceName)
 	}
 
 	if repositoryName == "" {
@@ -64,7 +66,7 @@ func main() {
 			log.Fatalf("The repository name could not be read from the %s environment variable and no value was provided as an input parameter", ENV_REPOSITORY_NAME)
 		}
 		repositoryName = os.Getenv(ENV_REPOSITORY_NAME)
-		log.Println("Current repository read from environment variable")
+		log.Printf("Current repository read from environment variable: %s", repositoryName)
 	}
 
 	if projectName == "" {
@@ -72,9 +74,11 @@ func main() {
 		_, ok := os.LookupEnv(ENV_TERRAFORM_CLOUD_PROJECT)
 		if ok {
 			projectName = os.Getenv(ENV_TERRAFORM_CLOUD_PROJECT)
-			log.Println("Project name read from environment variable")
+			log.Printf("Project name read from environment variable: %s", projectName)
 		}
 	}
+
+	variableMap := parseVariables(variables)
 
 	token, ok := os.LookupEnv(ENV_TERRAFORM_CLOUD_TOKEN)
 	if !ok || token == "" {
@@ -109,7 +113,7 @@ func main() {
 		log.Printf("Found application with name %s", *gitHubAppItem.Name)
 		if *gitHubAppItem.Name == githubOrganization {
 			gitHubApplication = gitHubAppItem
-			log.Printf("Set active github app to ID %s", *gitHubApplication.ID)
+			log.Printf("Set active GitHub app to ID %s", *gitHubApplication.ID)
 		}
 	}
 
@@ -132,7 +136,7 @@ func main() {
 		}
 	}
 
-	_, err = client.Workspaces.Create(ctx, organizationName, tfe.WorkspaceCreateOptions{
+	workspace, err := client.Workspaces.Create(ctx, organizationName, tfe.WorkspaceCreateOptions{
 		Type:             "workspaces",
 		Name:             tfe.String(workspaceName),
 		AutoApply:        tfe.Bool(true),
@@ -147,4 +151,37 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	log.Printf("Will assign %d variables to workspace", len(variableMap))
+	for key, value := range variableMap {
+		_, err := client.Variables.Create(ctx, workspace.ID, tfe.VariableCreateOptions{
+			Key:       tfe.String(key),
+			Value:     tfe.String(value),
+			HCL:       tfe.Bool(false),
+			Sensitive: tfe.Bool(false),
+			Category:  tfe.Category(tfe.CategoryTerraform),
+		})
+
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+
+func parseVariables(rawVariables string) map[string]string {
+	variableMap := make(map[string]string)
+
+	if len(rawVariables) == 0 {
+		return variableMap
+	}
+
+	variables := strings.Split(rawVariables, ",")
+
+	for _, variable := range variables {
+		keyvalue := strings.Split(variable, "=")
+		key, value := keyvalue[0], keyvalue[1]
+		variableMap[key] = value
+	}
+
+	return variableMap
 }

@@ -42,6 +42,8 @@ jobs:
         with:
           directory: infrastructure
           branch: ${{ github.head_ref }}
+          variables: |
+            var1=value1,var2=value2
   delete-workspace:
     if: ${{ github.event.action == 'closed' }}
     runs-on: ubuntu-latest

@@ -16,6 +16,8 @@ inputs:
     description: Git branch to trigger runs from (defaults to repository default branch)
   directory:
     description: Repository directory containing Terraform configuration (defaults to root directory)
+  variables:
+    description: Comma-separated list of key=value variable assignments, HCL and sensitive variables not supported
 
 runs:
   using: docker
@@ -33,6 +35,8 @@ runs:
     - ${{ inputs.directory }}
     - -branch
     - ${{ inputs.branch }}
+    - -variables
+    - ${{ inputs.variables }}
 
 branding:
   icon: star
